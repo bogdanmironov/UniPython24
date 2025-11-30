@@ -4,30 +4,43 @@ import os
 def validate_list(path: str) -> int:
     try:
         with open(path) as fd:
-            lines = fd.readlines()
-
-            print(lines)
-
-            sum = 0
-            for line in lines:
+            total_price = 0
+            for line in fd:
                 if line[0] != '-':
                     raise InvalidLineError(line)
-                line = line[1:]
-                line = line[:-2]
+
+                line = line.strip()[1:]
 
                 if line[0] == ' ':
                     line = line[1:]
 
-                tokens = line.split(':')
-
-
-                if not (tokens[0].isalnum() and tokens[1].isnumeric() and tokens[2].isnumeric()):
+                try:
+                    item_name, item_count, item_price = line.split(':')
+                except ValueError:
                     raise InvalidLineError(line)
 
+                if not item_name or item_name.isdigit():
+                    raise InvalidItemError(item_name)
 
-            return sum
-    except FileNotFoundError as e:
+                if not item_count.isdigit():
+                    raise InvalidQuantityError(item_price, item_name)
+                item_count = int(item_count)
+
+                try:
+                    item_price = float(item_price)
+
+                    if item_price < 0:
+                        raise InvalidPriceError(item_price, item_name)
+                except ValueError:
+                    raise InvalidPriceError(item_price, item_name)
+
+                total_price += item_count * item_price
+
+            return total_price
+    except (FileNotFoundError, PermissionError):
         raise ListFileError(path)
+    # except PermissionError:
+    #     raise ListFileError(path)
 
 
 class InvalidLineError(Exception):
@@ -41,12 +54,12 @@ class InvalidItemError(Exception):
 
 
 class InvalidQuantityError(Exception):
-    def __init__(self, quantity: int, item_name: str) -> None:
+    def __init__(self, quantity: str, item_name: str) -> None:
         super().__init__(f'Invalid quantity of {item_name}: {quantity}')
 
 
 class InvalidPriceError(Exception):
-    def __init__(self, price: int, item_name: str) -> None:
+    def __init__(self, price: float | int, item_name: str) -> None:
         super().__init__(f'Invalid price of {item_name}: {price}')
 
 
@@ -55,62 +68,62 @@ class ListFileError(Exception):
         super().__init__(f'File is not found. Path: \n {path}')
 
 
-# assert abs(validate_list(os.path.join("lab04_files", "task_1", "list1.txt")) - 11.25) < 0.001
-#
-# assert int(validate_list(os.path.join("lab04_files", "task_1", "list2.txt"))) == 0, "Empty files should return 0"
+assert abs(validate_list(os.path.join("task_1", "list1.txt")) - 11.25) < 0.001
+
+assert int(validate_list(os.path.join("task_1", "list2.txt"))) == 0, "Empty files should return 0"
 
 try:
-    validate_list(os.path.join("lab04_files", "task_1", "list3.txt"))
-    assert False, "Should raise InvalidLineError - 3"
+    validate_list(os.path.join("task_1", "list3.txt"))
+    assert False, "Should raise InvalidLineError"
 except InvalidLineError:
     pass
 
 try:
-    validate_list(os.path.join("lab04_files", "task_1", "list4.txt"))
-    assert False, "Should raise InvalidLineError - 4"
+    validate_list(os.path.join("task_1", "list4.txt"))
+    assert False, "Should raise InvalidLineError"
 except InvalidLineError:
     pass
 
 try:
-    validate_list(os.path.join("lab04_files", "task_1", "list5.txt"))
-    assert False, "Should raise InvalidItemError - 5"
+    validate_list(os.path.join("task_1", "list5.txt"))
+    assert False, "Should raise InvalidLineError"
 except InvalidItemError:
     pass
 
 try:
-    validate_list(os.path.join("lab04_files", "task_1", "list6.txt"))
-    assert False, "Should raise InvalidQuantityError - 6"
+    validate_list(os.path.join("task_1", "list6.txt"))
+    assert False, "Should raise InvalidLineError"
 except InvalidQuantityError:
     pass
 
 try:
-    validate_list(os.path.join("lab04_files", "task_1", "list7.txt"))
-    assert False, "Should raise InvalidQuantityError - 7"
+    validate_list(os.path.join("task_1", "list7.txt"))
+    assert False, "Should raise InvalidLineError"
 except InvalidQuantityError:
     pass
 
 try:
-    validate_list(os.path.join("lab04_files", "task_1", "list8.txt"))
-    assert False, "Should raise InvalidQuantityError - 8"
+    validate_list(os.path.join("task_1", "list8.txt"))
+    assert False, "Should raise InvalidLineError"
 except InvalidQuantityError:
     pass
 
 try:
-    validate_list(os.path.join("lab04_files", "task_1", "list9.txt"))
-    assert False, "Should raise InvalidPriceError - 9"
+    validate_list(os.path.join("task_1", "list9.txt"))
+    assert False, "Should raise InvalidLineError"
 except InvalidPriceError:
     pass
 
 try:
-    validate_list(os.path.join("lab04_files", "task_1", "list10.txt"))
-    assert False, "Should raise InvalidPriceError - 10"
+    validate_list(os.path.join("task_1", "list10.txt"))
+    assert False, "Should raise InvalidLineError"
 except InvalidPriceError:
     pass
 
 try:
-    validate_list(os.path.join("lab04_files", "task_1", "list11.txt"))
-    assert False, "Should raise InvalidLineError - 11"
+    validate_list(os.path.join("task_1", "list11.txt"))
+    assert False, "Should raise InvalidLineError"
 except InvalidLineError:
     pass
 
-print("✅ All OK! +2 points")
+print("✅ All OK! +1 point")
